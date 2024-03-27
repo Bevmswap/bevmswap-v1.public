@@ -256,7 +256,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     // **** SWAP ****
     // requires the initial amount to have already been sent to the first pair
     function _swap(uint256[] memory amounts, address[] memory path, address _to) internal virtual {
-        for (uint256 i; i < path.length - 1; i++) {
+        for (uint256 i; i < path.length - 1; ++i) {
             (address input, address output) = (path[i], path[i + 1]);
             (address token0,) = UniswapV2Library.sortTokens(input, output);
             uint256 amountOut = amounts[i + 1];
@@ -406,7 +406,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     // **** SWAP (supporting fee-on-transfer tokens) ****
     // requires the initial amount to have already been sent to the first pair
     function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to) internal virtual {
-        for (uint256 i; i < path.length - 1; i++) {
+        for (uint256 i; i < path.length - 1; ++i) {
             (address input, address output) = (path[i], path[i + 1]);
             (address token0,) = UniswapV2Library.sortTokens(input, output);
             IUniswapV2Pair pair = IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output));
@@ -509,7 +509,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint256 amountB)
     {
-        return UniswapV2Library.quote(amountA, reserveA, reserveB);
+        amountB = UniswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
     function getAmountOut(
@@ -523,7 +523,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint256 amountOut)
     {
-        return UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
+        amountOut = UniswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
     function getAmountIn(
@@ -537,7 +537,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint256 amountIn)
     {
-        return UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut);
+        amountIn = UniswapV2Library.getAmountIn(amountOut, reserveIn, reserveOut);
     }
 
     function getAmountsOut(
@@ -550,7 +550,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint256[] memory amounts)
     {
-        return UniswapV2Library.getAmountsOut(factory, amountIn, path);
+        amounts = UniswapV2Library.getAmountsOut(factory, amountIn, path);
     }
 
     function getAmountsIn(
@@ -563,6 +563,6 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         override
         returns (uint256[] memory amounts)
     {
-        return UniswapV2Library.getAmountsIn(factory, amountOut, path);
+        amounts = UniswapV2Library.getAmountsIn(factory, amountOut, path);
     }
 }

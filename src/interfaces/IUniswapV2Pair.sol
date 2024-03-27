@@ -1,4 +1,4 @@
-pragma solidity >=0.8.23;
+pragma solidity =0.8.23;
 
 import { IUniswapV2ERC20 } from "./IUniswapV2ERC20.sol";
 

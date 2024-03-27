@@ -25,7 +25,7 @@ library UniswapV2Library {
                             hex"ff",
                             factory,
                             keccak256(abi.encodePacked(token0, token1)),
-                            hex"ecbd133d72c3ccd4664dab201c61887283a8049eb379eb102646fefc3643997a" // init code hash
+                            hex"a1d96c4e569a8fba6c4ad8d633250547339e9fb98e185d256480ed16c528c9e2" // init code hash
                         )
                     )
                 )
@@ -50,8 +50,8 @@ library UniswapV2Library {
 
     // given some amount of an asset and pair reserves, returns an equivalent amount of the other asset
     function quote(uint256 amountA, uint256 reserveA, uint256 reserveB) internal pure returns (uint256 amountB) {
-        require(amountA > 0, "UniswapV2Library: INSUFFICIENT_AMOUNT");
-        require(reserveA > 0 && reserveB > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
+        require(amountA != 0, "UniswapV2Library: INSUFFICIENT_AMOUNT");
+        require(reserveA != 0 && reserveB != 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         amountB = amountA.mul(reserveB) / reserveA;
     }
 
@@ -65,8 +65,8 @@ library UniswapV2Library {
         pure
         returns (uint256 amountOut)
     {
-        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
+        require(amountIn != 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
+        require(reserveIn != 0 && reserveOut != 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         uint256 amountInWithFee = amountIn.mul(996);
         uint256 numerator = amountInWithFee.mul(reserveOut);
         uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
@@ -83,8 +83,8 @@ library UniswapV2Library {
         pure
         returns (uint256 amountIn)
     {
-        require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
+        require(amountOut != 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(reserveIn != 0 && reserveOut != 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         uint256 numerator = reserveIn.mul(amountOut).mul(1000);
         uint256 denominator = reserveOut.sub(amountOut).mul(996);
         amountIn = (numerator / denominator).add(1);
@@ -103,7 +103,7 @@ library UniswapV2Library {
         require(path.length >= 2, "UniswapV2Library: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
-        for (uint256 i; i < path.length - 1; i++) {
+        for (uint256 i; i < path.length - 1; ++i) {
             (uint256 reserveIn, uint256 reserveOut) = getReserves(factory, path[i], path[i + 1]);
             amounts[i + 1] = getAmountOut(amounts[i], reserveIn, reserveOut);
         }
@@ -122,7 +122,7 @@ library UniswapV2Library {
         require(path.length >= 2, "UniswapV2Library: INVALID_PATH");
         amounts = new uint256[](path.length);
         amounts[amounts.length - 1] = amountOut;
-        for (uint256 i = path.length - 1; i > 0; i--) {
+        for (uint256 i = path.length - 1; i > 0; --i) {
             (uint256 reserveIn, uint256 reserveOut) = getReserves(factory, path[i - 1], path[i]);
             amounts[i - 1] = getAmountIn(amounts[i], reserveIn, reserveOut);
         }

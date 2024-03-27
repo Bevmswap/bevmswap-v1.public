@@ -17,7 +17,7 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     uint256 public constant MINIMUM_LIQUIDITY = 10 ** 3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes("transfer(address,uint256)")));
 
-    address public factory;
+    address public immutable factory;
     address public token0;
     address public token1;
 
@@ -64,7 +64,7 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     function _update(uint256 balance0, uint256 balance1, uint112 _reserve0, uint112 _reserve1) private {
         require(balance0 <= type(uint112).max && balance1 <= type(uint112).max, "UniswapV2: OVERFLOW");
         uint32 blockTimestamp = uint32(block.timestamp % 2 ** 32);
-        uint32 timeElapsed = blockTimestamp - blockTimestampLast; // overflow is desired
+        uint32 timeElapsed = blockTimestamp - blockTimestampLast;
         if (timeElapsed > 0 && _reserve0 != 0 && _reserve1 != 0) {
             // * never overflows, and + overflow is desired
             price0CumulativeLast += uint256(UQ112x112.encode(_reserve1).uqdiv(_reserve0)) * timeElapsed;
@@ -76,7 +76,7 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         emit Sync(reserve0, reserve1);
     }
 
-    // if fee is on, mint liquidity equivalent to 1/6th of the growth in sqrt(k)
+    // if fee is on, mint liquidity equivalent to 1/2th of the growth in sqrt(k)
     function _mintFee(uint112 _reserve0, uint112 _reserve1) private returns (bool feeOn) {
         address feeTo = IUniswapV2Factory(factory).feeTo();
         feeOn = feeTo != address(0);
@@ -150,7 +150,7 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
 
     // this low-level function should be called from a contract which performs important safety checks
     function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external lock {
-        require(amount0Out > 0 || amount1Out > 0, "UniswapV2: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(amount0Out != 0 || amount1Out != 0, "UniswapV2: INSUFFICIENT_OUTPUT_AMOUNT");
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         require(amount0Out < _reserve0 && amount1Out < _reserve1, "UniswapV2: INSUFFICIENT_LIQUIDITY");
 
@@ -161,8 +161,8 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
             address _token0 = token0;
             address _token1 = token1;
             require(to != _token0 && to != _token1, "UniswapV2: INVALID_TO");
-            if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
-            if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
+            if (amount0Out != 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
+            if (amount1Out != 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
             if (data.length > 0) IUniswapV2Callee(to).uniswapV2Call(msg.sender, amount0Out, amount1Out, data);
             balance0 = IERC20(_token0).balanceOf(address(this));
             balance1 = IERC20(_token1).balanceOf(address(this));
@@ -172,8 +172,8 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         require(amount0In > 0 || amount1In > 0, "UniswapV2: INSUFFICIENT_INPUT_AMOUNT");
         {
             // scope for reserve{0,1}Adjusted, avoids stack too deep errors
-            uint256 balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(3));
-            uint256 balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(3));
+            uint256 balance0Adjusted = balance0.mul(1000).sub(amount0In.mul(4));
+            uint256 balance1Adjusted = balance1.mul(1000).sub(amount1In.mul(4));
             require(
                 balance0Adjusted.mul(balance1Adjusted) >= uint256(_reserve0).mul(_reserve1).mul(1000 ** 2),
                 "UniswapV2: K"
